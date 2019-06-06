@@ -40,6 +40,24 @@ class Type:
             raise SemanticError(f'Parent type "{parent.name}" is sealed. Can\'t inherit from it.')
         self.parent = parent
 
+    def type_union(self, other:Type):
+        if self.name == other.name:
+            return self
+
+        t1 = [self]
+        while t1[-1] != None:
+            t1.append(t1[-1].parent)
+
+        t2 = [other]
+        while t2[-1] != None:
+            t2.append(t2[-1].parent)
+
+        while t1[-2] == t2[-2]:
+            t1.pop()
+            t2.pop()
+
+        return t1[-2]
+
     def get_attribute(self, name:str):
         try:
             return next(attr for attr in self.attributes if attr.name == name)
