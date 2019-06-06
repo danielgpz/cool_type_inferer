@@ -1,8 +1,8 @@
 import cmp.visitor as visitor
 from cmp.semantic import SemanticError
 from cmp.semantic import Attribute, Method, Type
-from cmp.semantic import SelfType, AutoType, VoidType, ErrorType
-from cmp.semantic import Context
+from cmp.semantic import SelfType, AutoType, ErrorType
+from cmp.semantic import Context, Scope
 from cool_parser import ProgramNode, ClassDeclarationNode, AttrDeclarationNode, FuncDeclarationNode
 from cool_parser import MemberCallNode, IfThenElseNode, WhileLoopNode, BlockNode, LetInNode, CaseOfNode
 from cool_parser import AssignNode, UnaryNode, BinaryNode
@@ -148,6 +148,13 @@ class TypeBuilder:
             self.current_type.define_method(node.id, arg_names, arg_types, ret_type)
         except SemanticError as ex:
             self.errors.append(ex.text)
+
+WRONG_SIGNATURE = 'Method "%s" already defined in "%s" with a different signature.'
+SELF_IS_READONLY = 'Variable "self" is read-only.'
+LOCAL_ALREADY_DEFINED = 'Variable "%s" is already defined in method "%s".'
+INCOMPATIBLE_TYPES = 'Cannot convert "%s" into "%s".'
+VARIABLE_NOT_DEFINED = 'Variable "%s" is not defined in "%s".'
+INVALID_OPERATION = 'Operation is not defined between "%s" and "%s".'
 
 class FormatVisitor(object):
     @visitor.on('node')
