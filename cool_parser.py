@@ -18,18 +18,18 @@ class ClassDeclarationNode(DeclarationNode):
         self.parent = parent
         self.features = features
 
+class AttrDeclarationNode(DeclarationNode):
+    def __init__(self, idx, typex, expression=None):
+        self.id = idx
+        self.type = typex
+        self.expression = None
+
 class FuncDeclarationNode(DeclarationNode):
     def __init__(self, idx, params, return_type, body):
         self.id = idx
         self.params = params
         self.type = return_type
         self.body = body
-
-class AttrDeclarationNode(DeclarationNode):
-    def __init__(self, idx, typex, expression=None):
-        self.id = idx
-        self.type = typex
-        self.expression = None
 
 class ExpressionNode(Node):
     pass
@@ -85,16 +85,19 @@ class LessNode(BinaryNode):
 class EqualNode(BinaryNode):
     pass
 
-class PlusNode(BinaryNode):
+class ArithmeticNode(BinaryNode):
     pass
 
-class MinusNode(BinaryNode):
+class PlusNode(ArithmeticNode):
     pass
 
-class StarNode(BinaryNode):
+class MinusNode(ArithmeticNode):
     pass
 
-class DivNode(BinaryNode):
+class StarNode(ArithmeticNode):
+    pass
+
+class DivNode(ArithmeticNode):
     pass
 
 class IsVoidNode(UnaryNode):
