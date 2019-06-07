@@ -772,6 +772,14 @@ class Main inherits IO {
         fi;
     } };
 
+    test() : AUTO_TYPE {
+        let x : AUTO_TYPE <- 3 + 2 in {
+            case x of
+                y : Int => out_string("Ok");
+            esac;
+        }
+    };
+
     factorial(num: Int): Int {
         if num = 0 then 1 else num * factorial(num - 1) fi
     };
