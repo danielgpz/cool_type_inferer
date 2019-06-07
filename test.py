@@ -434,8 +434,8 @@ class TypeChecker:
                     self.errors.append(ex.text)
                     node_type = ErrorType()
 
-                if not obj_type.conforms_to(node.type):
-                    self.errors.append(INCOMPATIBLE_TYPES % (obj_type.name, node.type.name))
+                if not obj_type.conforms_to(node_type):
+                    self.errors.append(INCOMPATIBLE_TYPES % (obj_type.name, node_type.name))
                 obj_type = node.type
             
             obj_method = obj_type.get_method(node.id)
