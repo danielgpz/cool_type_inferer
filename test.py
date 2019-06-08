@@ -135,6 +135,10 @@ class TypeBuilder:
             except SemanticError as ex:
                 self.errors.append(ex.text)
                 arg_type = ErrorType()
+            else:
+                if isinstance(arg_type, SelfType):
+                    self.errors.append(f'Type "{arg_type.name}" canot be used as parameter type')
+                    arg_type = ErrorType()
                 
             arg_names.append(idx)
             arg_types.append(arg_type)
@@ -152,12 +156,13 @@ class TypeBuilder:
 
 
 
-WRONG_SIGNATURE = 'Method "%s" already defined in "%s" with a different signature.'
+WRONG_SIGNATURE = 'Method "%s" of "%s" already defined in "%s" with a different signature.'
 SELF_IS_READONLY = 'Variable "self" is read-only.'
 LOCAL_ALREADY_DEFINED = 'Variable "%s" is already defined in method "%s".'
 INCOMPATIBLE_TYPES = 'Cannot convert "%s" into "%s".'
 VARIABLE_NOT_DEFINED = 'Variable "%s" is not defined in "%s".'
 INVALID_OPERATION = 'Operation is not defined between "%s" and "%s".'
+CYCLIC_HERITAGE = 'Type "%s" froms a cyclic heritage chain'
 
 class TypeChecker:
     def __init__(self, context, errors=[]):
@@ -186,24 +191,26 @@ class TypeChecker:
 
     @visitor.when(ClassDeclarationNode)
     def visit(self, node, scope):
-        # check ciclic heritage
         self.current_type = self.context.get_type(node.id)
-        
-        for feature in node.features:
-            if isinstance(feature, AttrDeclarationNode):
-                self.visit(feature, scope.create_child())
 
+        # check ciclic heritage
+        parent = self.current_type.parent
+        while parent:
+            if parent == self.current_type:
+                self.errors.append(CYCLIC_HERITAGE % parent.name)
+                self.current_type.parent = self.object_type
+                break
+
+            parent = parent.parent
+        
         for attr in self.current_type.attributes:
             scope.define_variable(attr.name, attr.type)
-            
+
         for feature in node.features:
-            if isinstance(feature, FuncDeclarationNode):
-                self.visit(feature, scope.create_child())
-        
+            self.visit(feature, scope.create_child())
+
     @visitor.when(AttrDeclarationNode)
     def visit(self, node, scope):
-        # check redefined attr
-
         if node.expression:
             self.visit(node.expression, scope.create_cild())
             expr_type = node.expression.static_type
@@ -216,8 +223,18 @@ class TypeChecker:
 
     @visitor.when(FuncDeclarationNode)
     def visit(self, node, scope):
-        # check ilegal redefined func
         self.current_method = self.current_type.get_method(node.id)
+
+        # check ilegal redefined func
+        parent = self.current_type.parent
+        if parent:
+            try:
+                parent_method = parent.get_method(node.id)
+            except SemanticError:
+                pass
+            else:
+                if parent_method.param_types != self.current_method.param_types or parent_method.return_type != self.current_method.return_type:
+                     self.errors.append(WRONG_SIGNATURE % (self.current_method.name, self.current_type.name, parent.name))
         
         scope.define_variable('self', self.current_type)
         
@@ -303,6 +320,10 @@ class TypeChecker:
             except SemanticError as ex:
                 self.errors.append(ex.text)
                 node_type = ErrorType()
+            else:
+                if isinstance(node_type, SelfType):
+                    self.errors.append(f'Type "{node_type.name}" canot be used as case branch type')
+                    node_type = ErrorType()
 
             id_type = self.current_type if isinstance(node_type, SelfType) else node_type
 
@@ -381,13 +402,13 @@ class TypeChecker:
         self.visit(node.right, scope.create_child())
         right_type = node.right.static_type
 
-        if left_type.conforms_to(self.int_type) ^ right_type.conforms_to(self.int_type):
+        if isinstance(left_type, AutoType) or isinstance(right_type, AutoType):
+            pass 
+        elif left_type.conforms_to(self.int_type) ^ right_type.conforms_to(self.int_type):
             self.errors.append(INVALID_OPERATION % (left_type.name, right_type.name))
-
-        if left_type.conforms_to(self.string_type) ^ right_type.conforms_to(self.string_type):
+        elif left_type.conforms_to(self.string_type) ^ right_type.conforms_to(self.string_type):
             self.errors.append(INVALID_OPERATION % (left_type.name, right_type.name))
-
-        if left_type.conforms_to(self.bool_type) ^ right_type.conforms_to(self.bool_type):
+        elif left_type.conforms_to(self.bool_type) ^ right_type.conforms_to(self.bool_type):
             self.errors.append(INVALID_OPERATION % (left_type.name, right_type.name))
 
         node.static_type = self.bool_type
@@ -436,7 +457,8 @@ class TypeChecker:
 
                 if not obj_type.conforms_to(node_type):
                     self.errors.append(INCOMPATIBLE_TYPES % (obj_type.name, node_type.name))
-                obj_type = node.type
+                
+                obj_type = node_type
             
             obj_method = obj_type.get_method(node.id)
             
@@ -772,10 +794,13 @@ class Main inherits IO {
         fi;
     } };
 
+    out_string(y: Int): SELF_TYPE { 3 };
+
     test() : AUTO_TYPE {
         let x : AUTO_TYPE <- 3 + 2 in {
             case x of
                 y : Int => out_string("Ok");
+                w : SELF_TYPE => out_string("Wrong!");
             esac;
         }
     };
@@ -804,6 +829,11 @@ class Main inherits IO {
         fi
     };
 };
+
+class A1 inherits A2 { w(ww: SELF_TYPE): SELF_TYPE { self }; };
+class A2 inherits A3 { x(z: Int): Int { 1 / 1 }; };
+class A3 inherits A4 { x(z: Int): Int { 1 + 1 }; };
+class A4 inherits A1 { x(y: Int): Int { 1 }; };
 '''
 
 if __name__ == '__main__':
