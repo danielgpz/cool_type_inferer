@@ -21,7 +21,9 @@ class Method:
         self.name = name
         self.param_names = param_names
         self.param_types = params_types
+        self.param_infos = [VariableInfo(f'_{name}_{pname}', ptype) for pname, ptype in zip(param_names, params_types)] 
         self.return_type = return_type
+        self.return_info = VariableInfo(f'_{name}', return_type)
 
     def __str__(self):
         params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
@@ -49,7 +51,7 @@ class Type:
 
     def type_union(self, other):
         if self == other:
-            return self
+            return other
 
         t1 = [self]
         while t1[-1] != None:
@@ -130,6 +132,7 @@ class Type:
 class SelfType(Type):
     def __init__(self):
         Type.__init__(self, 'SELF_TYPE')
+        self.sealed = True
 
     def conforms_to(self, other):
         return False
@@ -143,6 +146,10 @@ class SelfType(Type):
 class AutoType(Type):
     def __init__(self):
         Type.__init__(self, 'AUTO_TYPE')
+        self.sealed = True
+
+    def union_type(self, other):
+        return self
 
     def conforms_to(self, other):
         return True
@@ -156,6 +163,10 @@ class AutoType(Type):
 class ErrorType(Type):
     def __init__(self):
         Type.__init__(self, '<error>')
+        self.sealed = True
+
+    def union_type(self, other):
+        return self
 
     def conforms_to(self, other):
         return True
@@ -198,6 +209,7 @@ class VariableInfo:
     def __init__(self, name, vtype):
         self.name = name
         self.type = vtype
+        self.infered = not isinstance(vtype, AutoType)
 
 class Scope:
     def __init__(self, parent=None):
