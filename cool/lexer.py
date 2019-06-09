@@ -1,7 +1,10 @@
 import ply.lex as lex
+from .parser import CoolGrammar
+from .cmp import Token
 
 
 ###### TOKEN LISTS ######
+tokens_dict = dict()
 
 literals = ['+', '-', '*', '/', ':', ';', '(', ')', '{', '}', '@', '.', ',']
 
@@ -37,6 +40,18 @@ tokens = [
 	'ASSIGN', 'LESS', 'LESSEQUAL', 'EQUAL', 'INT_COMPLEMENT', 'NOT',
 ] + list(reserved.values())
 
+for tok in tokens + literals:
+	try:
+		tokens_dict[tok] = CoolGrammar[tok.lower()]
+	except KeyError:
+		pass
+
+tokens_dict['ACTION'] = CoolGrammar['=>']
+tokens_dict['ASSIGN'] = CoolGrammar['<-']
+tokens_dict['LESS'] = CoolGrammar['<']
+tokens_dict['LESSEQUAL'] = CoolGrammar['<=']
+tokens_dict['EQUAL'] = CoolGrammar['=']
+tokens_dict['INT_COMPLEMENT'] = CoolGrammar['~']
 
 ###### TOKEN RULES ######
 
@@ -115,9 +130,26 @@ def tokenizer(code):
 		token = lex.token()
 		if token is None:
 			break
-		tokens.append(token)
+		tokens.append(Token(token.value, tokens_dict[token.type]))
 
+	tokens.append(Token('$', CoolGrammar.EOF))
+	
 	return tokens
+
+def pprint_tokens(tokens):
+    ocur, ccur, semi = CoolGrammar['{'], CoolGrammar['}'], CoolGrammar[';']
+    indent = 0
+    pending = []
+    for token in tokens:
+        pending.append(token)
+        if token.token_type in { ocur, ccur, semi }:
+            if token.token_type == ccur:
+                indent -= 1
+            print('    '*indent + ' '.join(str(t.token_type) for t in pending))
+            pending.clear()
+            if token.token_type == ocur:
+                indent += 1
+    print(' '.join([str(t.token_type) for t in pending]))
 
 ##### PROCESS INPUT ######
 

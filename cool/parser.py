@@ -1,5 +1,4 @@
-from cmp.pycompiler import Grammar
-from cmp.grammartools import LR1Parser
+from .cmp import Grammar, LR1Parser
 
 # AST Classes
 class Node:

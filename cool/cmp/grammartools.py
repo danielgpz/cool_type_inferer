@@ -1,7 +1,7 @@
 from queue import Queue
-from cmp.pycompiler import Grammar, Item
-from cmp.automata import State
-from cmp.utils import ContainerSet
+from .pycompiler import Grammar, Item
+from .automata import State
+from .utils import ContainerSet
 
 class GrammarTools:
     @staticmethod
