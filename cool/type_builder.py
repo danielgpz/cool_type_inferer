@@ -1,7 +1,7 @@
 from .cmp import visitor, ErrorType, SelfType, SemanticError
 from .parser import ProgramNode, ClassDeclarationNode, AttrDeclarationNode, FuncDeclarationNode
 
-ERROR_ON = '[Error] Ln %d, Col %d: '
+ERROR_ON = 'Ln %d, Col %d: '
 
 class TypeBuilder:
     def __init__(self, context, errors=[]):

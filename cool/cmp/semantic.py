@@ -11,7 +11,7 @@ class Attribute:
         self.type = typex
 
     def __str__(self):
-        return f'[attrib] {self.name} : {self.type.name};'
+        return f'[attrib] {self.name}: {self.type.name};'
 
     def __repr__(self):
         return str(self)
@@ -26,7 +26,7 @@ class Method:
         self.return_info = VariableInfo(f'_{name}', return_type)
 
     def __str__(self):
-        params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
+        params = ', '.join(f'{n}: {t.name}' for n,t in zip(self.param_names, self.param_types))
         return f'[method] {self.name}({params}): {self.return_type.name};'
 
     def __eq__(self, other):

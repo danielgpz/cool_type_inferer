@@ -1,7 +1,7 @@
 from .cmp import visitor, Context, SelfType, AutoType, SemanticError
 from .parser import ProgramNode, ClassDeclarationNode
 
-ERROR_ON = '[Error] Ln %d, Col %d: '
+ERROR_ON = 'Ln %d, Col %d: '
 
 class TypeCollector(object):
     def __init__(self, errors=[]):

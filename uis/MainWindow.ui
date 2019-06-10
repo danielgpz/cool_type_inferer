@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>843</width>
+    <height>612</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Cool Type Inferer</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>images/Qt.ico</normaloff>images/Qt.ico</iconset>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QGroupBox" name="groupCode">
+      <property name="font">
+       <font>
+        <family>Tahoma</family>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Code</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QTextEdit" name="textCode">
+         <property name="font">
+          <font>
+           <family>Consolas</family>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
+         </property>
+         <property name="lineWrapMode">
+          <enum>QTextEdit::NoWrap</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupResults">
+      <property name="font">
+       <font>
+        <family>Tahoma</family>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Results</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QTextBrowser" name="textResults">
+         <property name="font">
+          <font>
+           <family>Consolas</family>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="lineWrapMode">
+          <enum>QTextEdit::NoWrap</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>843</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionNewFile"/>
+    <addaction name="actionLoadFile"/>
+    <addaction name="separator"/>
+    <addaction name="actionSaveFile"/>
+    <addaction name="actionSaveFileAs"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionHowToUse"/>
+    <addaction name="actionAboutAuthors"/>
+    <addaction name="actionAboutCoolTypeInferer"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="font">
+    <font>
+     <family>Tahoma</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>795</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="windowTitle">
+    <string>Herramientas</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionAnalyse"/>
+   <addaction name="separator"/>
+   <addaction name="actionNewFile"/>
+   <addaction name="actionLoadFile"/>
+   <addaction name="separator"/>
+   <addaction name="actionSaveFile"/>
+   <addaction name="actionSaveFileAs"/>
+   <addaction name="separator"/>
+   <addaction name="actionHowToUse"/>
+  </widget>
+  <action name="actionNewFile">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/ui-tab--plus.png</normaloff>images/ui-tab--plus.png</iconset>
+   </property>
+   <property name="text">
+    <string>New File</string>
+   </property>
+   <property name="statusTip">
+    <string>New File</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionSaveFile">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/disk.png</normaloff>images/disk.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save File</string>
+   </property>
+   <property name="statusTip">
+    <string>Save File</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionLoadFile">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/blue-folder-open-document.png</normaloff>images/blue-folder-open-document.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load File</string>
+   </property>
+   <property name="statusTip">
+    <string>Load File</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/arrow-000.png</normaloff>images/arrow-000.png</iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="statusTip">
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F4</string>
+   </property>
+  </action>
+  <action name="actionHowToUse">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/lifebuoy.png</normaloff>images/lifebuoy.png</iconset>
+   </property>
+   <property name="text">
+    <string>How To Use</string>
+   </property>
+   <property name="statusTip">
+    <string>How to Use</string>
+   </property>
+  </action>
+  <action name="actionAboutAuthors">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/question.png</normaloff>images/question.png</iconset>
+   </property>
+   <property name="text">
+    <string>About Authors</string>
+   </property>
+   <property name="statusTip">
+    <string>About Authors</string>
+   </property>
+  </action>
+  <action name="actionAboutCoolTypeInferer">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/question.png</normaloff>images/question.png</iconset>
+   </property>
+   <property name="text">
+    <string>About Cool Type Inferer</string>
+   </property>
+   <property name="statusTip">
+    <string>About Cool Type Inferer</string>
+   </property>
+  </action>
+  <action name="actionSaveFileAs">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/disk--pencil.png</normaloff>images/disk--pencil.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save File As</string>
+   </property>
+   <property name="statusTip">
+    <string>Save File As</string>
+   </property>
+  </action>
+  <action name="actionAnalyse">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/control.png</normaloff>images/control.png</iconset>
+   </property>
+   <property name="text">
+    <string>Analyse</string>
+   </property>
+   <property name="toolTip">
+    <string>Analyse</string>
+   </property>
+   <property name="statusTip">
+    <string>Analyse</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

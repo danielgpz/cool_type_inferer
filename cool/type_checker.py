@@ -5,7 +5,7 @@ from .parser import AssignNode, UnaryNode, BinaryNode, LessEqualNode, LessNode, 
 from .parser import NotNode, IsVoidNode, ComplementNode, FunctionCallNode, MemberCallNode, NewNode, AtomicNode
 from .parser import IntegerNode, IdNode, StringNode, BoolNode
 
-ERROR_ON = '[Error] Ln %d, Col %d: '
+ERROR_ON = 'Ln %d, Col %d: '
 WRONG_SIGNATURE = 'Method "%s" of "%s" already defined in "%s" with a different signature.'
 SELF_IS_READONLY = 'Variable "self" is read-only.'
 LOCAL_ALREADY_DEFINED = 'Variable "%s" is already defined in method "%s".'
