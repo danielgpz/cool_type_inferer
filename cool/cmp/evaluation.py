@@ -11,7 +11,8 @@ def evaluate_reverse_parse(right_parse, operations, tokens):
     for operation in operations:
         if operation == Action.SHIFT:
             token = next(tokens)
-            stack.append(token.lex)
+            # stack.append(token.lex)
+            stack.append(token)
         elif operation == Action.REDUCE:
             production = next(right_parse)
             head, body = production

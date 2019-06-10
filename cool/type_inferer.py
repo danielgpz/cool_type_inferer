@@ -34,7 +34,7 @@ class TypeInferer:
 
     @visitor.when(ClassDeclarationNode)
     def visit(self, node, scope):
-        self.current_type = self.context.get_type(node.id)
+        self.current_type = self.context.get_type(node.id.lex)
 
         for feature, child_scope in zip(node.features, scope.children):
             self.visit(feature, child_scope)
@@ -46,18 +46,20 @@ class TypeInferer:
                 elif isinstance(var.type, AutoType):
                     pass
                 else:
+                    # mesagge of infering type
                     var.infered = self.changed = True
                     attr.type = var.type
 
     @visitor.when(AttrDeclarationNode)
     def visit(self, node, scope):
-        if node.expression:
-            attr = self.current_type.get_attribute(node.id)
+        expression = node.expression
+        if expression:
+            attr = self.current_type.get_attribute(node.id.lex)
 
-            self.visit(node.expression, scope.children[0], attr.type)
-            expr_type = node.expression.static_type
+            self.visit(expression, scope.children[0], attr.type)
+            expr_type = expression.static_type
 
-            var = scope.find_variable(node.id)
+            var = scope.find_variable(node.id.lex)
             if not var.infered:
                 if isinstance(expr_type, ErrorType):
                     pass
@@ -70,7 +72,7 @@ class TypeInferer:
 
     @visitor.when(FuncDeclarationNode)
     def visit(self, node, scope):
-        self.current_method = self.current_type.get_method(node.id)
+        self.current_method = self.current_type.get_method(node.id.lex)
             
         return_type = self.current_method.return_type
         self.visit(node.body, scope.children[0], self.current_type if isinstance(return_type, SelfType) else return_type)
@@ -82,6 +84,7 @@ class TypeInferer:
                 elif isinstance(var.type, AutoType):
                     pass
                 else:
+                    # mesagge of infering type
                     var.infered = self.changed = True
                     self.current_method.param_types[i] = var.type
                
@@ -93,6 +96,7 @@ class TypeInferer:
             elif isinstance(body_type, AutoType):
                 pass
             else:
+                # mesagge of infering type
                 var.type = body_type
                 var.infered = self.changed = True
                 self.current_method.return_type = var.type
@@ -142,7 +146,7 @@ class TypeInferer:
                     else:
                         var.type = expr_type
                         var.infered = self.changed = True
-                        node.let_body[i] = (idx, var.type, expr)
+                        node.let_body[i] = (idx.lex, var.type, expr)
 
         self.visit(node.in_body, scope.children[-1], spected_type)
 
@@ -153,6 +157,7 @@ class TypeInferer:
                 elif isinstance(var.type, AutoType):
                     pass
                 else:
+                    # mesagge of infering type
                     var.infered = self.changed = True
                     self.current_method.params_type[i] = var.type
 
@@ -172,7 +177,7 @@ class TypeInferer:
 
     @visitor.when(AssignNode)
     def visit(self, node, scope, spected_type=None):
-        var = scope.find_variable(node.id) if scope.is_defined(node.id) else None
+        var = scope.find_variable(node.id.lex) if scope.is_defined(node.id.lex) else None
 
         self.visit(node.expression, scope.children[0], var.type if var and var.infered else None)
         expr_type = node.expression.static_type
@@ -252,7 +257,7 @@ class TypeInferer:
         node_type = None
         if node.type:
                 try:
-                    node_type = self.context.get_type(node.type)
+                    node_type = self.context.get_type(node.type.lex)
                 except SemanticError:
                     node_type = ErrorType()
                 else:
@@ -265,7 +270,7 @@ class TypeInferer:
         try:    
             obj_type = node_type if node_type else obj_type
             
-            obj_method = obj_type.get_method(node.id)       
+            obj_method = obj_type.get_method(node.id.lex)       
             
             # setear el spected_type al retorno
             node_type = obj_type if isinstance(obj_method.return_type, SelfType) else obj_method.return_type
@@ -288,7 +293,7 @@ class TypeInferer:
         obj_type = self.current_type
         
         try:
-            obj_method = obj_type.get_method(node.id)
+            obj_method = obj_type.get_method(node.id.lex)
             
             # setear el spected_type al retorno
             node_type = obj_type if isinstance(obj_method.return_type, SelfType) else obj_method.return_type
@@ -310,7 +315,7 @@ class TypeInferer:
     @visitor.when(NewNode)
     def visit(self, node, scope, spected_type=None):
         try:
-            node_type = self.context.get_type(node.type)
+            node_type = self.context.get_type(node.type.lex)
         except SemanticError:
             node_type = ErrorType()
             
@@ -326,8 +331,8 @@ class TypeInferer:
 
     @visitor.when(IdNode)
     def visit(self, node, scope, spected_type=None):
-        if scope.is_defined(node.lex):
-            var = scope.find_variable(node.lex)
+        if scope.is_defined(node.token.lex):
+            var = scope.find_variable(node.token.lex)
 
             if spected_type and not var.infered:
                 if isinstance(spected_type, ErrorType) or isinstance(spected_type, SelfType):

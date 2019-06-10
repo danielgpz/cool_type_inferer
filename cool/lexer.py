@@ -122,15 +122,16 @@ lex.lex()
 ###### TOKENIZER ######
 
 def tokenizer(code):
-	lex.input(code)
 
 	tokens = []
 
-	while True:
-		token = lex.token()
-		if token is None:
-			break
-		tokens.append(Token(token.value, tokens_dict[token.type]))
+	for i, line in enumerate(code.split('\n')):
+		lex.input(line)
+		while True:
+			token = lex.token()
+			if token is None:
+				break
+			tokens.append(Token(token.value, tokens_dict[token.type], i + 1, token.lexpos))
 
 	tokens.append(Token('$', CoolGrammar.EOF))
 	

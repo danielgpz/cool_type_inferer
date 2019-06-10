@@ -10,8 +10,11 @@ def run_pipeline(text):
     tokens = tokenizer(text)
     pprint_tokens(tokens)
     print('=================== PARSE =====================')
-    parse, operations = CoolParser([t.token_type for t in tokens])
-    print('\n'.join(repr(x) for x in parse))
+    parse, operations = CoolParser(tokens)
+    if not operations:
+        print(f'Unexpected token: {parse.lex} at Ln: {parse.line}, Col {parse.column}')
+        return
+    # print('\n'.join(repr(x) for x in parse))
     print('==================== AST ======================')
     ast = evaluate_reverse_parse(parse, operations, tokens)
     formatter = FormatVisitor()
@@ -51,5 +54,5 @@ def run_pipeline(text):
     return ast, errors, context, scope
 
 if __name__ == '__main__':
-    f = open('test.cl')
+    f = open('test.cl', 'r')
     run_pipeline(f.read())

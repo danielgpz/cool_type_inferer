@@ -1,6 +1,8 @@
 from .cmp import visitor, Context, SelfType, AutoType, SemanticError
 from .parser import ProgramNode, ClassDeclarationNode
 
+ERROR_ON = '[Error] Ln %d, Col %d: '
+
 class TypeCollector(object):
     def __init__(self, errors=[]):
         self.context = Context()
@@ -29,6 +31,6 @@ class TypeCollector(object):
     @visitor.when(ClassDeclarationNode)
     def visit(self, node):
         try:
-            self.context.create_type(node.id)
+            self.context.create_type(node.id.lex)
         except SemanticError as ex:
-            self.errors.append(ex.text)
+            self.errors.append(ERROR_ON % (node.line, node.column) + ex.text)
