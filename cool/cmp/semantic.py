@@ -65,7 +65,7 @@ class Type:
             t1.pop()
             t2.pop()
 
-        return t1[-2]
+        return t1[-1]
 
     def get_attribute(self, name:str):
         try:
@@ -210,6 +210,51 @@ class VariableInfo:
         self.name = name
         self.type = vtype
         self.infered = not isinstance(vtype, AutoType)
+        self.upper_types = []
+        self.lower_types = []
+
+    def set_upper_type(self, typex):
+        if not self.infered and not isinstance(typex, AutoType):
+            self.upper_types.append(typex)
+
+    def set_lower_type(self, typex):
+        if not self.infered:
+            self.lower_types.append(typex)
+
+    def infer_type(self):
+        if not self.infered:
+            upper_type = None
+            for typex in self.upper_types:
+                if not upper_type or typex.conforms_to(upper_type):
+                    upper_type = typex
+                elif upper_type.conforms_to(typex):
+                    pass
+                else:
+                    upper_type = ErrorType()
+                    break
+
+            lower_type = None
+            for typex in self.lower_types:
+                lower_type = typex if not lower_type else lower_type.type_union(typex)
+
+            if lower_type:
+                self.type = lower_type if not upper_type or lower_type.conforms_to(upper_type) else ErrorType()
+            else:
+                self.type = upper_type
+
+            if not self.type or isinstance(self.type, ErrorType):
+                self.type = AutoType()
+
+            self.infered = not isinstance(self.type, AutoType)
+            self.upper_types = []
+            self.lower_types = []
+
+            return self.infered
+
+        return False
+
+
+            
 
 class Scope:
     def __init__(self, parent=None):

@@ -40,15 +40,8 @@ class TypeInferer:
             self.visit(feature, child_scope)
 
         for attr, var in zip(self.current_type.attributes, scope.locals):
-            if not var.infered:
-                if isinstance(var.type, ErrorType):
-                    var.type = AutoType()
-                elif isinstance(var.type, AutoType):
-                    pass
-                else:
-                    # mesagge of infering type
-                    var.infered = self.changed = True
-                    attr.type = var.type
+            self.changed |= var.infer_type()
+            attr.type = var.type
 
     @visitor.when(AttrDeclarationNode)
     def visit(self, node, scope):
@@ -60,15 +53,9 @@ class TypeInferer:
             expr_type = expression.static_type
 
             var = scope.find_variable(node.id.lex)
-            if not var.infered:
-                if isinstance(expr_type, ErrorType):
-                    pass
-                elif isinstance(expr_type, AutoType):
-                    pass
-                else:
-                    var.type = expr_type
-                    var.infered = self.changed = True
-                    attr.type = var.type
+            var.set_upper_type(expr_type)
+            self.changed |= var.infer_type()
+            attr.type = var.type
 
     @visitor.when(FuncDeclarationNode)
     def visit(self, node, scope):
@@ -78,28 +65,14 @@ class TypeInferer:
         self.visit(node.body, scope.children[0], self.current_type if isinstance(return_type, SelfType) else return_type)
 
         for i, var in enumerate(scope.locals[1:]):
-            if not var.infered:
-                if isinstance(var.type, ErrorType):
-                    var.type = AutoType()
-                elif isinstance(var.type, AutoType):
-                    pass
-                else:
-                    # mesagge of infering type
-                    var.infered = self.changed = True
-                    self.current_method.param_types[i] = var.type
+            self.changed |= var.infer_type()
+            self.current_method.param_types[i] = var.type
                
         body_type = node.body.static_type
         var = self.current_method.return_info
-        if not var.infered:
-            if isinstance(body_type, ErrorType):
-                pass
-            elif isinstance(body_type, AutoType):
-                pass
-            else:
-                # mesagge of infering type
-                var.type = body_type
-                var.infered = self.changed = True
-                self.current_method.return_type = var.type
+        var.set_lower_type(body_type)
+        self.changed |= var.infer_type()
+        self.current_method.return_type = var.type
 
     @visitor.when(IfThenElseNode)
     def visit(self, node, scope, expected_type=None):
@@ -138,28 +111,15 @@ class TypeInferer:
                 self.visit(expr, child_scope, var.type if var.infered else None)
                 expr_type = expr.static_type
                 
-                if not var.infered:
-                    if isinstance(expr_type, ErrorType):
-                        pass
-                    elif isinstance(expr_type, AutoType):
-                        pass
-                    else:
-                        var.type = expr_type
-                        var.infered = self.changed = True
-                        node.let_body[i] = (idx.lex, var.type, expr)
+                var.set_upper_type(expr_type)
+                self.changed |= var.infer_type()
+                typex.name = var.type.name
 
         self.visit(node.in_body, scope.children[-1], expected_type)
 
         for i, var in enumerate(scope.locals):
-            if not var.infered:
-                if isinstance(var.type, ErrorType):
-                    var.type = AutoType()
-                elif isinstance(var.type, AutoType):
-                    pass
-                else:
-                    # mesagge of infering type
-                    var.infered = self.changed = True
-                    self.current_method.params_type[i] = var.type
+            self.changed |= var.infer_type()
+            node.let_body[i] = (node.let_body[i][0], var.type, node.let_body[i][2])
 
         node.static_type = node.in_body.static_type
 
@@ -179,16 +139,10 @@ class TypeInferer:
     def visit(self, node, scope, expected_type=None):
         var = scope.find_variable(node.id.lex) if scope.is_defined(node.id.lex) else None
 
-        self.visit(node.expression, scope.children[0], var.type if var and var.infered else None)
+        self.visit(node.expression, scope.children[0], var.type if var and var.infered else expected_type)
         expr_type = node.expression.static_type
 
-        if var and not var.infered:
-            if isinstance(expr_type, ErrorType) or isinstance(var.type, ErrorType):
-                pass
-            elif isinstance(expr_type, AutoType):
-                pass
-            else:
-                var.type = expr_type if isinstance(var.type, AutoType) else var.type.type_union(expr_type)
+        var.set_lower_type(expr_type)
         
         node.static_type = expr_type
 
@@ -267,7 +221,7 @@ class TypeInferer:
         self.visit(node.obj, scope.children[0], node_type)
         obj_type = node.obj.static_type
         
-        try:    
+        try:
             obj_type = node_type if node_type else obj_type
             
             obj_method = obj_type.get_method(node.id.lex)       
@@ -334,17 +288,8 @@ class TypeInferer:
         if scope.is_defined(node.token.lex):
             var = scope.find_variable(node.token.lex)
 
-            if expected_type and not var.infered:
-                if isinstance(expected_type, ErrorType) or isinstance(expected_type, SelfType):
-                    print(f'Error!!!! {expected_type}')
-                elif isinstance(expected_type, AutoType):
-                    print(f'{expected_type}?????')
-                elif isinstance(var.type, ErrorType):
-                    pass
-                elif isinstance(var.type, AutoType):
-                    var.type = expected_type
-                elif not var.type.conforms_to(expected_type):
-                    var.type = expected_type if expected_type.conforms_to(var.type) else ErrorType()
+            if expected_type:
+                var.set_upper_type(expected_type)
 
             node_type = var.type if var.infered else AutoType()   
         else:

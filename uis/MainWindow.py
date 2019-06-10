@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'd:\Asignaturas\Compilacion\Proyectos\Inferencia de tipos para Cool\uis\MainWindow.ui'
+# Form implementation generated from reading ui file 'd:\Asignaturas\Compilacion\Proyectos\Cool Type Inferer\uis\MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -29,14 +29,11 @@ class Ui_MainWindow(object):
         self.groupCode.setObjectName("groupCode")
         self.gridLayout = QtWidgets.QGridLayout(self.groupCode)
         self.gridLayout.setObjectName("gridLayout")
-        self.textCode = QtWidgets.QTextEdit(self.groupCode)
+        self.textCode = CodeEditor(self.groupCode)
         font = QtGui.QFont()
         font.setFamily("Consolas")
-        font.setPointSize(14)
         self.textCode.setFont(font)
-        self.textCode.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.textCode.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.textCode.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+        self.textCode.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
         self.textCode.setObjectName("textCode")
         self.gridLayout.addWidget(self.textCode, 0, 0, 1, 1)
         self.horizontalLayout.addWidget(self.groupCode)
@@ -186,3 +183,4 @@ class Ui_MainWindow(object):
         self.actionAnalyse.setStatusTip(_translate("MainWindow", "Analyse"))
         self.actionAnalyse.setShortcut(_translate("MainWindow", "F5"))
 
+from .codeeditor import CodeEditor
