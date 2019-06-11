@@ -5,12 +5,19 @@ from .parser import AssignNode, UnaryNode, BinaryNode, LessEqualNode, LessNode, 
 from .parser import NotNode, IsVoidNode, ComplementNode, FunctionCallNode, MemberCallNode, NewNode, AtomicNode
 from .parser import IntegerNode, IdNode, StringNode, BoolNode
 
+INFERENCE_ON = 'Ln %d, Col %d: '
+INF_ATTR = 'On class "%s", attribute "%s": type "%s"'
+INF_PARAM = 'On method "%s" of class "%s", param "%s": type "%s"'
+INF_RETRN = 'Return of method "%s" in class "%s", type "%s"'
+INF_VAR = 'Varible "%s", type "%s"'
+
 class TypeInferer:
-    def __init__(self, context, errors=[]):
+    def __init__(self, context, errors=[], inferences=[]):
         self.context = context
         self.current_type = None
         self.current_method = None
         self.errors = errors
+        self.inferences = inferences
 
         # search built-in types
         self.object_type = self.context.get_type('Object')
@@ -40,8 +47,10 @@ class TypeInferer:
             self.visit(feature, child_scope)
 
         for attr, var in zip(self.current_type.attributes, scope.locals):
-            self.changed |= var.infer_type()
-            attr.type = var.type
+            if var.infer_type():
+                self.changed = True
+                attr.type = var.type
+                self.inferences.append(INF_ATTR % (self.current_type.name, attr.name, var.type.name))
 
     @visitor.when(AttrDeclarationNode)
     def visit(self, node, scope):
@@ -54,8 +63,10 @@ class TypeInferer:
 
             var = scope.find_variable(node.id.lex)
             var.set_upper_type(expr_type)
-            self.changed |= var.infer_type()
-            attr.type = var.type
+            if var.infer_type():
+                self.changed = True
+                attr.type = var.type
+                self.inferences.append(INF_ATTR % (self.current_type.name, attr.name, var.type.name))
 
     @visitor.when(FuncDeclarationNode)
     def visit(self, node, scope):
@@ -65,14 +76,18 @@ class TypeInferer:
         self.visit(node.body, scope.children[0], self.current_type if isinstance(return_type, SelfType) else return_type)
 
         for i, var in enumerate(scope.locals[1:]):
-            self.changed |= var.infer_type()
-            self.current_method.param_types[i] = var.type
+            if var.infer_type():
+                self.changed = True
+                self.current_method.param_types[i] = var.type
+                self.inferences.append(INF_PARAM % (self.current_method.name, self.current_type.name, var.name, var.type.name))
                
         body_type = node.body.static_type
         var = self.current_method.return_info
         var.set_lower_type(body_type)
-        self.changed |= var.infer_type()
-        self.current_method.return_type = var.type
+        if var.infer_type():
+            self.changed = True
+            self.current_method.return_type = var.type
+            self.inferences.append(INF_RETRN % (self.current_method.name, self.current_type.name, var.type.name))
 
     @visitor.when(IfThenElseNode)
     def visit(self, node, scope, expected_type=None):
@@ -112,14 +127,19 @@ class TypeInferer:
                 expr_type = expr.static_type
                 
                 var.set_upper_type(expr_type)
-                self.changed |= var.infer_type()
-                typex.name = var.type.name
+                if var.infer_type():
+                    self.changed = True
+                    typex.name = var.type.name
+                    self.inferences.append(INFERENCE_ON % (idx.line, idx.column) + INF_VAR % (var.name, var.type.name))
 
         self.visit(node.in_body, scope.children[-1], expected_type)
 
         for i, var in enumerate(scope.locals):
-            self.changed |= var.infer_type()
-            node.let_body[i] = (node.let_body[i][0], var.type, node.let_body[i][2])
+            if var.infer_type():
+                    self.changed = True
+                    idx, typex, _ = node.let_body[i]
+                    typex.name = var.type.name
+                    self.inferences.append(INFERENCE_ON % (idx.line, idx.column) + INF_VAR % (var.name, var.type.name))
 
         node.static_type = node.in_body.static_type
 

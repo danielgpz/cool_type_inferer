@@ -118,31 +118,31 @@ class MainWindow(QMainWindow):
             return
         self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Successful parsing!\n')
         # print('\n'.join(repr(x) for x in parse))
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}==================== AST ======================\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}==================== AST ======================\n')
         ast = evaluate_reverse_parse(parse, operations, tokens)
         formatter = FormatVisitor()
         tree = formatter.visit(ast)
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{tree}\n')
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}============== COLLECTING TYPES ===============\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{tree}\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}============== COLLECTING TYPES ===============\n')
         errors = []
         collector = TypeCollector(errors)
         collector.visit(ast)
         context = collector.context
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Errors: [\n')
-        for error in errors:
-            self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{error}\n')
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}]\n')
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Context:\n')
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{context}\n')
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}=============== BUILDING TYPES ================\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Errors: [\n')
+        # for error in errors:
+        #     self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{error}\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}]\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Context:\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{context}\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}=============== BUILDING TYPES ================\n')
         builder = TypeBuilder(context, errors)
         builder.visit(ast)
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Errors: [\n')
-        for error in errors:
-            self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{error}\n')
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}]\n')
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Context:\n')
-        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{context}\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Errors: [\n')
+        # for error in errors:
+        #     self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{error}\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}]\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Context:\n')
+        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{context}\n')
         self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}=============== CHECKING TYPES ================\n')
         checker = TypeChecker(context, errors)
         scope = checker.visit(ast)
@@ -151,10 +151,13 @@ class MainWindow(QMainWindow):
             self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{error}\n')
         self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}]\n')
         self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}============== INFERINING TYPES ===============\n')
-        inferer = TypeInferer(context, errors)
+        inferences = []
+        inferer = TypeInferer(context, errors, inferences)
         while inferer.visit(ast, scope): pass
-        # tree = formatter.visit(ast)
-        # self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{tree}\n')
+        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Inferences: [\n')
+        for inference in inferences:
+            self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{inference}\n')
+        self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}]\n')
         self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}Context:\n')
         self.ui.textResults.setPlainText(f'{self.ui.textResults.toPlainText()}{context}\n')
 
