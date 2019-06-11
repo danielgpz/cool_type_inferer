@@ -182,7 +182,7 @@ feature_list, feature = CoolGrammar.NonTerminals('<feature-list> <feature>')
 param_list, param = CoolGrammar.NonTerminals('<param-list> <param>')
 expr, member_call, expr_list, let_list, case_list = CoolGrammar.NonTerminals('<expr> <member-call> <expr-list> <let-list> <case-list>')
 truth_expr, comp_expr = CoolGrammar.NonTerminals('<truth-expr> <comp-expr>')
-arith, term, factor, factor_2, factor_3 = CoolGrammar.NonTerminals('<arith> <term> <factor> <factor-2> <factor-3>')
+arith, term, factor, factor_2 = CoolGrammar.NonTerminals('<arith> <term> <factor> <factor-2>')
 atom, func_call, arg_list = CoolGrammar.NonTerminals('<atom> <func-call> <arg-list>')
 
 # terminals
@@ -274,12 +274,18 @@ factor %= isvoid + factor_2, lambda h, s: IsVoidNode(s[2])
 factor %= factor_2, lambda h, s: s[1]
 
 # <factor-2>    ???
-factor_2 %= compl + factor_3, lambda h, s: ComplementNode(s[2])
-factor_2 %= factor_3, lambda h, s: s[1]
+factor_2 %= compl + atom, lambda h, s: ComplementNode(s[2])
+factor_2 %= atom, lambda h, s: s[1]
 
-# <factor-3>    ???
-factor_3 %= atom, lambda h, s: s[1]
-factor_3 %= atom + func_call, lambda h, s: FunctionCallNode(s[1], *s[2])
+# <atom>        ???
+atom %= atom + func_call, lambda h, s: FunctionCallNode(s[1], *s[2])
+atom %= member_call, lambda h, s: s[1]
+atom %= new + typex, lambda h, s: NewNode(s[2])
+atom %= opar + expr + cpar, lambda h, s: s[2]
+atom %= idx, lambda h, s: IdNode(s[1])
+atom %= integer, lambda h, s: IntegerNode(s[1])
+atom %= string, lambda h, s: StringNode(s[1])
+atom %= boolx, lambda h, s: BoolNode(s[1])
 
 # <func-call>   ???
 func_call %= dot + idx + opar + arg_list + cpar, lambda h, s: (s[2], s[4])
@@ -290,15 +296,6 @@ func_call %= at + typex + dot + idx + opar + cpar, lambda h, s: (s[4], [], s[2])
 # <arg-list>    ???
 arg_list %= expr, lambda h, s: [s[1]]
 arg_list %= expr + comma + arg_list, lambda h, s: [s[1]] + s[3]
-
-# <atom>        ???
-atom %= member_call, lambda h, s: s[1]
-atom %= new + typex, lambda h, s: NewNode(s[2])
-atom %= opar + expr + cpar, lambda h, s: s[2]
-atom %= idx, lambda h, s: IdNode(s[1])
-atom %= integer, lambda h, s: IntegerNode(s[1])
-atom %= string, lambda h, s: StringNode(s[1])
-atom %= boolx, lambda h, s: BoolNode(s[1])
 
 # <member-call> ???
 member_call %= idx + opar + arg_list + cpar, lambda h, s: MemberCallNode(s[1], s[3])
